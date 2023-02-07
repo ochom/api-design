@@ -3,19 +3,26 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/ochom/api-design/pkg/controllers"
-	// "github.com/ochom/api-design/pkg/handlers/graphql"
+	"github.com/ochom/api-design/pkg/handlers/graph"
+	"github.com/ochom/api-design/pkg/handlers/rest"
 )
 
 // Handler is a handler interface
 type Handler struct {
-	ctl *controllers.Controller
+	ctl           *controllers.Controller
+	graphResolver *graph.Resolver
+	rest          *rest.API
 }
 
 // NewHandler creates a new handler instance
 func NewHandler() *Handler {
 	ctl := controllers.NewController()
+	gr := graph.NewResolver(ctl)
+	rest := rest.NewRestAPI(ctl)
 	return &Handler{
-		ctl: ctl,
+		ctl:           ctl,
+		graphResolver: gr,
+		rest:          rest,
 	}
 }
 
@@ -27,11 +34,17 @@ func (h *Handler) Routes() *gin.Engine {
 	router.GET("/ping", h.Ping)
 
 	// rest api routes
+	rest := router.Group("/v1")
+	{
+		rest.GET("/ping", h.rest.Ping())
+	}
 
 	// graphql routes
-	// graph := router.Group("/graphql")
-	// graph.GET("/play", graphql.PlaygroundHandler())
-	// graph.POST("/query", graphql.RequestHandler(h.ctl))
+	graphql := router.Group("/graphql")
+	{
+		graphql.GET("/play", h.graphResolver.Play())
+		graphql.POST("/query", h.graphResolver.Serve())
+	}
 
 	return router
 }

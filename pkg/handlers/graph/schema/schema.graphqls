@@ -1,0 +1,14 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+scalar Upload
+scalar Time
+scalar Map
+
+type Query {
+  ping: String!
+}
+
+type Mutation {
+  pingMe(input: Pang!): Ping!
+}
